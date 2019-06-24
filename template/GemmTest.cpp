@@ -1,5 +1,13 @@
 #include "dragonite.hpp"
 
+#define COMPARE(buffer, answer, size, message) do {                                        \
+    using dragonite::lpnorm;                                                               \
+    dragonite::subtract(buffer, answer, size);                                             \
+    ASSERT_TRUE_MSG(lpnorm<1>(buffer, size) < 3e-7f * lpnorm<1>(answer, size), message);   \
+    ASSERT_TRUE_MSG(lpnorm<2>(buffer, size) < 5e-7f * lpnorm<2>(answer, size), message);   \
+    ASSERT_TRUE_MSG(lpnorm<-1>(buffer, size) < 1e-6f * lpnorm<-1>(answer, size), message); \
+} while (0)
+
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
     {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) -%}
@@ -8,31 +16,36 @@
 
     float alpha = {{ alpha }};
     float beta = {{ beta }};
-    bool transA = {{ (orderA == 'F') | lower }};
-    bool transB = {{ (orderB == 'F') | lower }};
+    const bool transA = {{ (orderA == 'F') | lower }};
+    const bool transB = {{ (orderB == 'F') | lower }};
 
     const float AB[] = {{ AB | flatten }};
     const float Y[] = {{ (alpha * AB + beta * C) | flatten }};
-    const float Yr[] = {{ (alpha * AB + beta * C[0]) | flatten }};
-    const float Yv[] = {{ (alpha * AB + beta * C.flatten()[numpy.newaxis, range(rows)].T) | flatten }};
-    const float Ys[] = {{ (alpha * AB + beta * C[0, 0]) | flatten }};
+    const float Yrow[] = {{ (alpha * AB + beta * C[0]) | flatten }};
+    const float Ycol[] = {{ (alpha * AB + beta * C.flatten()[numpy.newaxis, range(rows)].T) | flatten }};
+    const float Ysca[] = {{ (alpha * AB + beta * C[0, 0]) | flatten }};
 
-    const std::int32_t vector[] = { rows, 1 };
+    const std::int32_t* Lshape = transA ? ATshape : Ashape;
+    const std::int32_t* Rshape = transB ? BTshape : Bshape;
+    const std::int32_t column[] = { rows, 1 };
 
-    ONNC_RUNTIME_gemm_float(nullptr, A, 2, Ashape, B, 2, Bshape, O, 0, nullptr, buffer, 2, Cshape, 1, -0.0, transA, transB);
-    ASSERT_TRUE((dragonite::approx)(buffer, AB, rows * cols));
+    const char message[] = "orderA='{{ orderA }}', orderB='{{ orderB }}'";
+    auto f = ONNC_RUNTIME_gemm_float;
 
-    ONNC_RUNTIME_gemm_float(nullptr, A, 2, Ashape, B, 2, Bshape, C, 2, Cshape, buffer, 2, Cshape, alpha, beta, transA, transB);
-    ASSERT_TRUE((dragonite::approx)(buffer, Y, rows * cols));
+    f(nullptr, A, 2, Lshape, B, 2, Rshape, O, 0, nullptr, buffer, 2, Cshape, 1, -0.0, transA, transB);
+    COMPARE(buffer, AB, size, message);
 
-    ONNC_RUNTIME_gemm_float(nullptr, A, 2, Ashape, B, 2, Bshape, C, 1, Cshape + 1, buffer, 2, Cshape, alpha, beta, transA, transB);
-    ASSERT_TRUE((dragonite::approx)(buffer, Yr, rows * cols));
+    f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, Cshape, buffer, 2, Cshape, alpha, beta, transA, transB);
+    COMPARE(buffer, Y, size, message);
 
-    ONNC_RUNTIME_gemm_float(nullptr, A, 2, Ashape, B, 2, Bshape, C, 2, vector, buffer, 2, Cshape, alpha, beta, transA, transB);
-    ASSERT_TRUE((dragonite::approx)(buffer, Yv, rows * cols));
+    f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 1, Cshape + 1, buffer, 2, Cshape, alpha, beta, transA, transB);
+    COMPARE(buffer, Yrow, size, message);
 
-    ONNC_RUNTIME_gemm_float(nullptr, A, 2, Ashape, B, 2, Bshape, C, 0, nullptr, buffer, 2, Cshape, alpha, beta, transA, transB);
-    ASSERT_TRUE((dragonite::approx)(buffer, Ys, rows * cols));
+    f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, column, buffer, 2, Cshape, alpha, beta, transA, transB);
+    COMPARE(buffer, Ycol, size, message);
+
+    f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 0, nullptr, buffer, 2, Cshape, alpha, beta, transA, transB);
+    COMPARE(buffer, Ysca, size, message);
 }
 {% endmacro -%}
 
@@ -42,10 +55,14 @@ SKYPAT_F(Operator_Gemm, {{ name }})
     const std::int32_t rows = {{ rows }};
     const std::int32_t cols = {{ cols }};
     const std::int32_t depth = {{ depth }};
+    const std::int32_t size = rows * cols;
 
     const std::int32_t Ashape[] = { rows, depth };
     const std::int32_t Bshape[] = { depth, cols };
     const std::int32_t Cshape[] = { rows, cols };
+
+    const std::int32_t ATshape[] = { depth, rows };
+    const std::int32_t BTshape[] = { cols, depth };
 
     {% set A = numpy.random.randn(rows * depth) -%}
     {% set B = numpy.random.randn(depth * cols) -%}
@@ -54,9 +71,9 @@ SKYPAT_F(Operator_Gemm, {{ name }})
     const float A[] = {{ A | flatten }};
     const float B[] = {{ B | flatten }};
     const float C[] = {{ C | flatten }};
-    const float O[rows * cols] = { 0 };
+    const float O[size] = { 0 };
 
-    float buffer[rows * cols];
+    float buffer[size];
 
     {{ view(rows, cols, depth, A, B, C, 'C', 'C') }}
     {{ view(rows, cols, depth, A, B, C, 'F', 'C') }}
@@ -65,5 +82,7 @@ SKYPAT_F(Operator_Gemm, {{ name }})
 }
 {% endmacro -%}
 
-{{ testcase("2x2", 2, 2, 2) }}
-{{ testcase("543", 5, 4, 5) }}
+{{ testcase("basic", 2, 2, 2) }}
+{{ testcase("hetero", 5, 4, 3) }}
+{{ testcase("shallow", 8, 3, 1) }}
+{{ testcase("vector", 3, 1, 9) }}

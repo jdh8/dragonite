@@ -90,12 +90,10 @@ T lpnorm(const T* x, std::size_t n)
     return LpNorm<Power>::compute(x, n);
 }
 
-inline bool approx(float* buffer, const float* answer, std::size_t n)
+inline void subtract(float* buffer, const float* answer, std::size_t n)
 {
     for (std::size_t i = 0; i < n; ++i)
         buffer[i] -= answer[i];
-
-    return lpnorm<2>(buffer, n) < 1e-6f * lpnorm<2>(answer, n);
 }
 
 } // namespace dragonite
