@@ -86,3 +86,4 @@ SKYPAT_F(Operator_Gemm, {{ name }})
 {{ testcase("hetero", 5, 4, 3) }}
 {{ testcase("shallow", 8, 3, 1) }}
 {{ testcase("vector", 3, 1, 9) }}
+{# vim: set ft=liquid: #}
