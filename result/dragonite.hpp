@@ -90,11 +90,17 @@ T lpnorm(const T* x, std::size_t n)
     return LpNorm<Power>::compute(x, n);
 }
 
-inline void subtract(float* buffer, const float* answer, std::size_t n)
+#if !(defined(__GNUC__) || defined(_MSC_VER))
+#define __restrict
+#endif
+template<typename T>
+inline void subtract(T* __restrict minuend, const T* __restrict subtrahend, std::size_t n)
 {
     for (std::size_t i = 0; i < n; ++i)
-        buffer[i] -= answer[i];
+        minuend[i] -= subtrahend[i];
 }
-
+#if !(defined(__GNUC__) || defined(_MSC_VER))
+#undef __restrict
+#endif
 } // namespace dragonite
 #endif
