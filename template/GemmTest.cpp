@@ -3,8 +3,8 @@
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) %}
 {
     {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) %}
-    {% set alpha = numpy.random.randn() %}
-    {% set beta = numpy.random.randn() %}
+    {% set alpha = numpy.float32(numpy.random.randn()) %}
+    {% set beta = numpy.float32(numpy.random.randn()) %}
 
     float alpha = {{ alpha }};
     float beta = {{ beta }};
@@ -56,9 +56,9 @@ SKYPAT_F(Operator_Gemm, {{ name }})
     const std::int32_t ATshape[] = { depth, rows };
     const std::int32_t BTshape[] = { cols, depth };
 
-    {% set A = numpy.random.randn(rows * depth) %}
-    {% set B = numpy.random.randn(depth * cols) %}
-    {% set C = numpy.random.randn(rows, cols) %}
+    {% set A = numpy.random.randn(rows * depth).astype(numpy.float32) %}
+    {% set B = numpy.random.randn(depth * cols).astype(numpy.float32) %}
+    {% set C = numpy.random.randn(rows, cols).astype(numpy.float32) %}
 
     const float A[] = {{ A | flatten }};
     const float B[] = {{ B | flatten }};
