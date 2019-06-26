@@ -1,13 +1,5 @@
 #include "dragonite.hpp"
 
-#define COMPARE(buffer, answer, size, message) do {                                        \
-    using dragonite::lpnorm;                                                               \
-    dragonite::subtract(buffer, answer, size);                                             \
-    ASSERT_TRUE_MSG(lpnorm<1>(buffer, size) < 3e-7f * lpnorm<1>(answer, size), message);   \
-    ASSERT_TRUE_MSG(lpnorm<2>(buffer, size) < 5e-7f * lpnorm<2>(answer, size), message);   \
-    ASSERT_TRUE_MSG(lpnorm<-1>(buffer, size) < 1e-6f * lpnorm<-1>(answer, size), message); \
-} while (0)
-
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
     {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) -%}
@@ -33,19 +25,19 @@
     auto f = ONNC_RUNTIME_gemm_float;
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, O, 0, nullptr, buffer, 2, Cshape, 1, -0.0, transA, transB);
-    COMPARE(buffer, AB, size, message);
+    dragonite::verify(buffer, AB, size, message);
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, Cshape, buffer, 2, Cshape, alpha, beta, transA, transB);
-    COMPARE(buffer, Y, size, message);
+    dragonite::verify(buffer, Y, size, message);
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 1, Cshape + 1, buffer, 2, Cshape, alpha, beta, transA, transB);
-    COMPARE(buffer, Yrow, size, message);
+    dragonite::verify(buffer, Yrow, size, message);
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, column, buffer, 2, Cshape, alpha, beta, transA, transB);
-    COMPARE(buffer, Ycol, size, message);
+    dragonite::verify(buffer, Ycol, size, message);
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 0, nullptr, buffer, 2, Cshape, alpha, beta, transA, transB);
-    COMPARE(buffer, Ysca, size, message);
+    dragonite::verify(buffer, Ysca, size, message);
 }
 {% endmacro -%}
 
