@@ -1,10 +1,10 @@
 #include "dragonite.hpp"
 
-{% macro view(rows, cols, depth, A, B, C, orderA, orderB) %}
+{% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
-    {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) %}
-    {% set alpha = numpy.float32(numpy.random.randn()) %}
-    {% set beta = numpy.float32(numpy.random.randn()) %}
+    {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) -%}
+    {% set alpha = numpy.float32(numpy.random.randn()) -%}
+    {% set beta = numpy.float32(numpy.random.randn()) -%}
 
     float alpha = {{ alpha }};
     float beta = {{ beta }};
@@ -39,10 +39,10 @@
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 0, nullptr, buffer, 2, Cshape, alpha, beta, transA, transB);
     dragonite::verify(buffer, Ysca, size, message);
 }
-{% endmacro %}
+{% endmacro -%}
 
-{% macro testcase(name, rows, cols, depth) %}
-SKYPAT_F(Operator_Gemm, {{ name }})
+{% macro testcase(name, rows, cols, depth) -%}
+SKYPAT_F(Gemm, {{ name }})
 {
     const std::int32_t rows = {{ rows }};
     const std::int32_t cols = {{ cols }};
@@ -56,9 +56,9 @@ SKYPAT_F(Operator_Gemm, {{ name }})
     const std::int32_t ATshape[] = { depth, rows };
     const std::int32_t BTshape[] = { cols, depth };
 
-    {% set A = numpy.random.randn(rows * depth).astype(numpy.float32) %}
-    {% set B = numpy.random.randn(depth * cols).astype(numpy.float32) %}
-    {% set C = numpy.random.randn(rows, cols).astype(numpy.float32) %}
+    {% set A = numpy.random.randn(rows * depth).astype(numpy.float32) -%}
+    {% set B = numpy.random.randn(depth * cols).astype(numpy.float32) -%}
+    {% set C = numpy.random.randn(rows, cols).astype(numpy.float32) -%}
 
     const float A[] = {{ A | flatten }};
     const float B[] = {{ B | flatten }};
@@ -67,15 +67,15 @@ SKYPAT_F(Operator_Gemm, {{ name }})
 
     float buffer[size];
 
-    {{ view(rows, cols, depth, A, B, C, 'C', 'C') }}
-    {{ view(rows, cols, depth, A, B, C, 'F', 'C') }}
-    {{ view(rows, cols, depth, A, B, C, 'C', 'F') }}
-    {{ view(rows, cols, depth, A, B, C, 'F', 'F') }}
+    {{ view(rows, cols, depth, A, B, C, 'C', 'C') | indent }}
+    {{ view(rows, cols, depth, A, B, C, 'F', 'C') | indent }}
+    {{ view(rows, cols, depth, A, B, C, 'C', 'F') | indent }}
+    {{ view(rows, cols, depth, A, B, C, 'F', 'F') | indent }}
 }
-{% endmacro %}
+{% endmacro -%}
 
 {{ testcase("basic", 2, 2, 2) }}
 {{ testcase("hetero", 5, 4, 3) }}
 {{ testcase("shallow", 8, 3, 1) }}
-{{ testcase("vector", 3, 1, 9) }}
+{{ testcase("vector", 3, 1, 9) -}}
 {# vim: set ft=liquid: #}
