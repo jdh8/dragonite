@@ -10,14 +10,14 @@ SKYPAT_F(PRelu, {{ name }})
     const std::int32_t shape[] = { {{ x.shape | join(", ") or -1 }} };
     const std::int32_t slope_shape[] = { {{ slope.shape | join(", ") or -1 }} };
 
-    float buffer[{{ x.size }}];
+    const std::int32_t ndim = {{ x.ndim }};
+    const std::size_t size = {{ x.size }};
 
-    ONNC_RUNTIME_prelu_float(nullptr,
-        x, {{ x.ndim }}, shape,
-        slope, {{ slope.ndim }}, slope_shape,
-        buffer, {{ x.ndim }}, shape);
+    float buffer[size];
 
-    dragonite::verify(buffer, y, {{ x.size }});
+    ONNC_RUNTIME_prelu_float(nullptr, x, ndim, shape, slope, {{ slope.ndim }}, slope_shape, buffer, ndim, shape);
+
+    ASSERT_TRUE(dragonite::approx(buffer, y, size));
 }
 {% endmacro -%}
 
