@@ -14,7 +14,7 @@
     const float AB[] = {{ AB | flatten }};
     const float Y[] = {{ (alpha * AB + beta * C) | flatten }};
     const float Yrow[] = {{ (alpha * AB + beta * C[0]) | flatten }};
-    const float Ycol[] = {{ (alpha * AB + beta * C.flatten()[numpy.newaxis, range(rows)].T) | flatten }};
+    const float Ycol[] = {{ (alpha * AB + beta * C.flatten()[range(rows), numpy.newaxis]) | flatten }};
     const float Ysca[] = {{ (alpha * AB + beta * C[0, 0]) | flatten }};
 
     const std::int32_t* Lshape = transA ? ATshape : Ashape;
