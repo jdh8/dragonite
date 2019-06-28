@@ -35,5 +35,4 @@ SKYPAT_F(Softmax, {{ name }})
 {{ testcase("tensor", tensor) }}
 {{ testcase("tensor0", tensor, axis=0) }}
 {{ testcase("tensor2", tensor, axis=2) -}}
-{{ testcase("tensorlast", tensor, axis= tensor.ndim - 1) -}}
 {# vim: set ft=liquid: #}
