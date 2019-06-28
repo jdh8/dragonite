@@ -2,7 +2,7 @@
 
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
-    {% set AB = gemm(A.reshape((rows, depth), order=orderA), B.reshape((depth, cols), order=orderB)) -%}
+    {% set AB = A.reshape((rows, depth), order=orderA) | gemm(B.reshape((depth, cols), order=orderB)) -%}
     {% set alpha = numpy.float32(numpy.random.randn()) -%}
     {% set beta = numpy.float32(numpy.random.randn()) -%}
 
