@@ -3,11 +3,11 @@ SKYPAT_F({{ operator }}, {{ name }})
 {
     {% set y = x[operator | lower](axis) -%}
 
-    const float x[] = {{ x | flatten }};
-    const float y[] = {{ y | flatten }};
+    const float x[] = {{ x.flatten() | array }};
+    const float y[] = {{ y.flatten() | array }};
 
-    const std::int32_t xshape[] = { {{ x.shape | join(", ") or -1 }} };
-    const std::int32_t yshape[] = { {{ (x.shape[:axis] + (1,) * keepdims + x.shape[axis + 1:] or (-1,)) | join(", ") }} };
+    const std::int32_t xshape[] = {{ x.shape | array }};
+    const std::int32_t yshape[] = {{ (x.shape[:axis] + (1,) * keepdims + x.shape[axis + 1:]) | array }};
 
     const std::size_t size = {{ y.size }};
 

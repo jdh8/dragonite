@@ -3,12 +3,12 @@
 {% macro testcase(name, x, slope) -%}
 SKYPAT_F(PRelu, {{ name }})
 {
-    const float x[] = {{ x | flatten }};
-    const float slope[] = {{ slope | flatten }};
-    const float y[] = {{ numpy.where(numpy.signbit(x), numpy.broadcast_to(slope, x.shape) * x, x) | flatten }};
+    const float x[] = {{ x.flatten() | array }};
+    const float slope[] = {{ slope.flatten() | array }};
+    const float y[] = {{ numpy.where(numpy.signbit(x), numpy.broadcast_to(slope, x.shape) * x, x).flatten() | array }};
 
-    const std::int32_t shape[] = { {{ x.shape | join(", ") or -1 }} };
-    const std::int32_t slope_shape[] = { {{ slope.shape | join(", ") or -1 }} };
+    const std::int32_t shape[] = {{ x.shape | array }};
+    const std::int32_t slope_shape[] = {{ slope.shape | array }};
 
     const std::int32_t ndim = {{ x.ndim }};
     const std::size_t size = {{ x.size }};

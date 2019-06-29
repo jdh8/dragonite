@@ -11,11 +11,11 @@
     const bool transA = {{ (orderA == 'F') | lower }};
     const bool transB = {{ (orderB == 'F') | lower }};
 
-    const float AB[] = {{ AB | flatten }};
-    const float Y[] = {{ (alpha * AB + beta * C) | flatten }};
-    const float Yrow[] = {{ (alpha * AB + beta * C[0]) | flatten }};
-    const float Ycol[] = {{ (alpha * AB + beta * C.flatten()[range(rows), numpy.newaxis]) | flatten }};
-    const float Ysca[] = {{ (alpha * AB + beta * C[0, 0]) | flatten }};
+    const float AB[] = {{ AB.flatten() | array }};
+    const float Y[] = {{ (alpha * AB + beta * C).flatten() | array }};
+    const float Yrow[] = {{ (alpha * AB + beta * C[0]).flatten() | array }};
+    const float Ycol[] = {{ (alpha * AB + beta * C.flatten()[range(rows), numpy.newaxis]).flatten() | array }};
+    const float Ysca[] = {{ (alpha * AB + beta * C[0, 0]).flatten() | array }};
 
     const std::int32_t* Lshape = transA ? ATshape : Ashape;
     const std::int32_t* Rshape = transB ? BTshape : Bshape;
@@ -60,9 +60,9 @@ SKYPAT_F(Gemm, {{ name }})
     {% set B = numpy.random.randn(depth * cols).astype(numpy.float32) -%}
     {% set C = numpy.random.randn(rows, cols).astype(numpy.float32) -%}
 
-    const float A[] = {{ A | flatten }};
-    const float B[] = {{ B | flatten }};
-    const float C[] = {{ C | flatten }};
+    const float A[] = {{ A.flatten() | array }};
+    const float B[] = {{ B.flatten() | array }};
+    const float C[] = {{ C.flatten() | array }};
     const float O[size] = { 0 };
 
     float buffer[size];

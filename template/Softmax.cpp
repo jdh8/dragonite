@@ -8,10 +8,10 @@ SKYPAT_F(Softmax, {{ name }})
     {% set exp = numpy.exp(x - fmax) -%}
     {% set y = exp / numpy.sum(exp, axis=axes, keepdims=true) -%}
 
-    const float x[] = {{ x | flatten }};
-    const float y[] = {{ y | flatten }};
+    const float x[] = {{ x.flatten() | array }};
+    const float y[] = {{ y.flatten() | array }};
 
-    const std::int32_t shape[] = { {{ x.shape | join(", ") or -1 }} };
+    const std::int32_t shape[] = {{ x.shape | array }};
     const std::int32_t ndim = {{ x.ndim }};
     const std::size_t size = {{ x.size }};
 
