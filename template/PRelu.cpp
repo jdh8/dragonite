@@ -1,5 +1,7 @@
 #include "dragonite.hpp"
 
+{% from "mod/batch.cpp" import batch -%}
+
 {% macro subtest(x, subshape) -%}
 {
     {% set slope = numpy.random.sample(size = subshape).astype(numpy.float32) -%}
@@ -19,11 +21,11 @@
 }
 {% endmacro -%}
 
-{% macro testcase(name, shape) -%}
+{% call(name, shape) batch() -%}
 SKYPAT_F(PRelu, {{ name }})
 {
     {% set x = numpy.random.normal(size = shape).astype(numpy.float32) -%}
-    {% set ndim = shape | length %}
+    {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};
 
@@ -37,10 +39,5 @@ SKYPAT_F(PRelu, {{ name }})
         {{ subtest(x, numpy.power(shape, bits)) | indent }}
     {% endfor %}
 }
-{% endmacro -%}
-
-{{ testcase("scalar", ()) }}
-{{ testcase("vector", numpy.random.randint(2, 6, 1)) }}
-{{ testcase("matrix", numpy.random.randint(2, 6, 2)) }}
-{{ testcase("tensor", numpy.random.randint(2, 6, numpy.random.randint(3, 6))) -}}
+{% endcall -%}
 {# vim: set ft=liquid: #}
