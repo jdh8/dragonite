@@ -1,7 +1,7 @@
 #include "dragonite.hpp"
 
-{% from "mod/batch.cpp" import batch %}
-{% from "mod/argmax.cpp" import testcase %}
+{% from "mod/batch.cpp" import batch -%}
+{% from "mod/argmax.cpp" import testcase -%}
 
 {% call(name, shape) batch() -%}
     {{ testcase("ArgMin", name, shape) -}}
