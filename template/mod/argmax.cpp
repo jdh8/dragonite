@@ -1,7 +1,7 @@
 {% macro testcase(operator, name, shape) -%}
 SKYPAT_F({{ operator }}, {{ name }})
 {
-    {% set x = numpy.random.normal(size=shape).astype(numpy.float32) -%}
+    {% set x = numpy.random.standard_cauchy(shape).astype(numpy.float32) -%}
     {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};

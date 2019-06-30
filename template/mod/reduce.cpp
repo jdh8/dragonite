@@ -1,4 +1,4 @@
-{% macro outer(operator, name, shape, rng=numpy.random.normal) -%}
+{% macro outer(operator, name, shape, rng=numpy.random.standard_cauchy) -%}
 SKYPAT_F({{ operator }}, {{ name }})
 {
     {% set x = rng(size=shape).astype(numpy.float32) -%}

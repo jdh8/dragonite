@@ -5,7 +5,7 @@
 {% call(name, shape) batch() -%}
 SKYPAT_F(Softmax, {{ name }})
 {
-    {% set x = numpy.random.normal(size=shape).astype(numpy.float32) -%}
+    {% set x = numpy.random.standard_cauchy(shape).astype(numpy.float32) -%}
     {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};

@@ -4,7 +4,7 @@
 
 {% macro subtest(x, subshape) -%}
 {
-    {% set slope = numpy.random.sample(size=subshape).astype(numpy.float32) -%}
+    {% set slope = numpy.random.gumbel(size=subshape).astype(numpy.float32) -%}
 
     const float slope[] = {{ slope.flatten() | array }};
     const float y[] = {{ numpy.where(numpy.signbit(x), slope * x, x).flatten() | array }};
@@ -24,7 +24,7 @@
 {% call(name, shape) batch() -%}
 SKYPAT_F(PRelu, {{ name }})
 {
-    {% set x = numpy.random.normal(size=shape).astype(numpy.float32) -%}
+    {% set x = numpy.random.standard_cauchy(shape).astype(numpy.float32) -%}
     {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};

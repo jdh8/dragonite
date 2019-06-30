@@ -3,8 +3,8 @@
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
     {% set AB = A.reshape((rows, depth), order=orderA) | gemm(B.reshape((depth, cols), order=orderB)) -%}
-    {% set alpha = numpy.float32(numpy.random.randn()) -%}
-    {% set beta = numpy.float32(numpy.random.randn()) -%}
+    {% set alpha = numpy.float32(numpy.random.standard_cauchy()) -%}
+    {% set beta = numpy.float32(numpy.random.standard_cauchy()) -%}
 
     float alpha = {{ alpha }};
     float beta = {{ beta }};
@@ -56,9 +56,9 @@ SKYPAT_F(Gemm, {{ name }})
     const std::int32_t ATshape[] = { depth, rows };
     const std::int32_t BTshape[] = { cols, depth };
 
-    {% set A = numpy.random.randn(rows * depth).astype(numpy.float32) -%}
-    {% set B = numpy.random.randn(depth * cols).astype(numpy.float32) -%}
-    {% set C = numpy.random.randn(rows, cols).astype(numpy.float32) -%}
+    {% set A = numpy.random.standard_cauchy(rows * depth).astype(numpy.float32) -%}
+    {% set B = numpy.random.standard_cauchy(depth * cols).astype(numpy.float32) -%}
+    {% set C = numpy.random.standard_cauchy((rows, cols)).astype(numpy.float32) -%}
 
     const float A[] = {{ A.flatten() | array }};
     const float B[] = {{ B.flatten() | array }};
