@@ -1,3 +1,3 @@
 #include "dragonite.hpp"
-{% from "argmax.hpp" import batch %}
+{% from "mod/argmax.cpp" import batch %}
 {{ batch("ArgMax") }}

@@ -36,3 +36,4 @@ SKYPAT_F({{ operator }}, {{ name }})
     {{ testcase(operator, "tensor0", tensor, axis=0) -}}
     {{ testcase(operator, "tensor2", tensor, axis=2) -}}
 {% endmacro -%}
+{# vim: set ft=liquid: #}
