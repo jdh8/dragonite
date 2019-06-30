@@ -9,4 +9,3 @@
     {% endcall -%}
 {% endcall -%}
 {# vim: set ft=liquid: #}
-
