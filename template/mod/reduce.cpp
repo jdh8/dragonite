@@ -6,6 +6,7 @@ SKYPAT_F({{ operator }}, {{ name }})
 
     const float x[] = {{ x.flatten() | array }};
     const std::int32_t shape[] = {{ shape | array }};
+    const auto f = ONNC_RUNTIME_{{ operator | lower }}_float;
 
     {% for r in range(ndim, -1, -1) -%}
         {% for axes in itertools.combinations(range(ndim), r) -%}
@@ -28,10 +29,10 @@ SKYPAT_F({{ operator }}, {{ name }})
     const std::int32_t unsqueezed[] = {{ y.shape | array }};
     const std::int32_t squeezed[] = {{ y.squeeze(axes).shape | array }};
 
-    ONNC_RUNTIME_reducel1_float(nullptr, x, ndim, shape, buffer, ndim, unsqueezed, axes, reductions, true);
+    f(nullptr, x, ndim, shape, buffer, ndim, unsqueezed, axes, reductions, true);
     dragonite::verify(buffer, y, size, "axes={{ axes }}, unsqueezed");
 
-    ONNC_RUNTIME_reducel1_float(nullptr, x, ndim, shape, buffer, ndim - reductions, squeezed, axes, reductions, false);
+    f(nullptr, x, ndim, shape, buffer, ndim - reductions, squeezed, axes, reductions, false);
     dragonite::verify(buffer, y, size, "axes={{ axes }}, squeezed");
 }
 {% endmacro -%}
