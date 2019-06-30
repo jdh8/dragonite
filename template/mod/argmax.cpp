@@ -1,39 +1,44 @@
-{% macro testcase(operator, name, x, axis=1, keepdims=true) -%}
+{% macro testcase(operator, name, shape) -%}
 SKYPAT_F({{ operator }}, {{ name }})
 {
-    {% set y = x[operator | lower](axis) -%}
+    {% set x = numpy.random.normal(size = shape).astype(numpy.float32) -%}
+    {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};
-    const float y[] = {{ y.flatten() | array }};
 
-    const std::int32_t xshape[] = {{ x.shape | array }};
-    const std::int32_t yshape[] = {{ (x.shape[:axis] + (1,) * keepdims + x.shape[axis + 1:]) | array }};
+    const std::int32_t shape[] = {{ shape | array }};
+    const std::int32_t ndim = {{ ndim }};
 
-    const std::size_t size = {{ y.size }};
+    const auto f = ONNC_RUNTIME_{{ operator | lower }}_float;
 
-    float buffer[size];
+    {% for axis in range(ndim) -%}
+    {
+        {% set y = x[operator | lower](axis) -%}
 
-    ONNC_RUNTIME_{{ operator | lower }}_float(nullptr,
-        x, {{ x.ndim }}, xshape,
-        buffer, {{ y.ndim + keepdims }}, yshape,
-        {{ axis }}, {{ keepdims | lower }});
+        const float y[] = {{ y.flatten() | array }};
 
-    ASSERT_FALSE(std::memcmp(buffer, y, size * sizeof(float)));
+        const std::int32_t unsqueezed[] = {{ (y.shape[:axis] + (1,) + y.shape[axis + 1:]) | array }};
+        const std::int32_t squeezed[] = {{ y.shape | array }};
+
+        float buffer[{{ y.size }}];
+
+        f(nullptr, x, ndim, shape, buffer, ndim, unsqueezed, {{ axis }}, true);
+        ASSERT_FALSE(std::memcmp(buffer, y, sizeof(y)));
+
+        f(nullptr, x, ndim, shape, buffer, ndim - 1, squeezed, {{ axis }}, false);
+        ASSERT_FALSE(std::memcmp(buffer, y, sizeof(y)));
+    }
+    {% else -%}
+    {
+        float buffer;
+
+        f(nullptr, x, ndim, shape, &buffer, 0, nullptr, 0, true);
+        ASSERT_EQ(buffer, 0);
+
+        f(nullptr, x, ndim, shape, &buffer, 0, nullptr, 0, false);
+        ASSERT_EQ(buffer, 0);
+    }
+    {% endfor %}
 }
-{% endmacro -%}
-
-{% macro batch(operator) -%}
-    {% set scalar = numpy.array(numpy.float32(numpy.random.randn())) -%}
-    {% set vector = numpy.random.randn(numpy.random.randint(2, 6)).astype(numpy.float32) -%}
-    {% set matrix = numpy.random.normal(size = numpy.random.randint(2, 6, 2)).astype(numpy.float32) -%}
-    {% set tensor = numpy.random.normal(size = numpy.random.randint(2, 6, numpy.random.randint(3, 6))).astype(numpy.float32) -%}
-
-    {{ testcase(operator, "scalar", scalar, axis=0) -}}
-    {{ testcase(operator, "vector", vector, axis=0) -}}
-    {{ testcase(operator, "matrix", matrix) -}}
-    {{ testcase(operator, "matrix0", matrix, axis=0) -}}
-    {{ testcase(operator, "tensor", tensor) -}}
-    {{ testcase(operator, "tensor0", tensor, axis=0) -}}
-    {{ testcase(operator, "tensor2", tensor, axis=2) -}}
 {% endmacro -%}
 {# vim: set ft=liquid: #}
