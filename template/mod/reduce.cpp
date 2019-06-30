@@ -1,7 +1,7 @@
-{% macro outer(operator, name, shape) -%}
+{% macro outer(operator, name, shape, rng=numpy.random.normal) -%}
 SKYPAT_F({{ operator }}, {{ name }})
 {
-    {% set x = numpy.random.normal(size = shape).astype(numpy.float32) -%}
+    {% set x = rng(size=shape).astype(numpy.float32) -%}
     {% set ndim = shape | length -%}
 
     const float x[] = {{ x.flatten() | array }};
