@@ -5,3 +5,5 @@ result/%.cpp: dragonite.py template/%.cpp
 
 clean:
 	$(RM) result/*.cpp
+
+.DELETE_ON_ERROR:
