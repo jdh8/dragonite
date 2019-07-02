@@ -12,9 +12,8 @@ SKYPAT_F(Hardmax, {{ name }})
 
     const std::int32_t shape[] = {{ shape | array }};
     const std::int32_t ndim = {{ ndim }};
-    const std::size_t size = {{ x.size }};
 
-    float buffer[size];
+    float buffer[{{ x.size }}];
 
     {% for axis in range(ndim) -%}
     {
@@ -23,7 +22,7 @@ SKYPAT_F(Hardmax, {{ name }})
 
         const float y[] = {{ y.flatten() | array }};
         ONNC_RUNTIME_hardmax_float(nullptr, x, ndim, shape, buffer, ndim, shape, {{ axis }});
-        dragonite::verify(buffer, y, size, "axis={{ axis }}");
+        ASSERT_FALSE(std::memcmp(buffer, y, sizeof(y)));
     }
     {% else -%}
     {
