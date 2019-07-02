@@ -16,7 +16,11 @@ SKYPAT_F({{ operator }}, {{ name }})
 }
 {% endmacro -%}
 
-{% macro inner(y, axes) -%}
+{% macro assert(message) -%}
+    dragonite::verify(buffer, y, size, {{ message | tojson }});
+{% endmacro -%}
+
+{% macro inner(y, axes, verify=assert) -%}
 {
     const float y[] = {{ y.flatten() | array }};
     const std::int32_t axes[] = {{ axes | array }};
@@ -30,10 +34,10 @@ SKYPAT_F({{ operator }}, {{ name }})
     const std::int32_t squeezed[] = {{ y.squeeze(axes).shape | array }};
 
     f(nullptr, x, ndim, shape, buffer, ndim, unsqueezed, axes, reductions, true);
-    dragonite::verify(buffer, y, size, "axes={{ axes }}, unsqueezed");
+    {{ verify("axes="~ axes ~", unsqueezed") }}
 
     f(nullptr, x, ndim, shape, buffer, ndim - reductions, squeezed, axes, reductions, false);
-    dragonite::verify(buffer, y, size, "axes={{ axes }}, squeezed");
+    {{ verify("axes="~ axes ~", squeezed") }}
 }
 {% endmacro -%}
 {# vim: set ft=liquid: #}
