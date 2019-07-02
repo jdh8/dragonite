@@ -7,8 +7,7 @@
     {% call(x, y) outer("Add", name, shape) -%}
         {% set a = numpy.random.standard_cauchy(x).astype(numpy.float32) -%}
         {% set b = numpy.random.standard_cauchy(y).astype(numpy.float32) -%}
-        {% set c = a + b -%}
-        {{ inner(c, a, b) }}
+        {{ inner(a + b, a, b) }}
     {% endcall -%}
 {% endcall -%}
 {# vim: set ft=liquid: #}
