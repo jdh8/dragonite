@@ -1,4 +1,4 @@
-#include "dragonite.hpp"
+#include "dragonite/common.hpp"
 
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
@@ -23,21 +23,22 @@
 
     const char message[] = "orderA='{{ orderA }}', orderB='{{ orderB }}'";
     auto f = ONNC_RUNTIME_gemm_float;
+    using dragonite::norm;
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, O, 0, nullptr, buffer, 2, Cshape, 1, -0.0, transA, transB);
-    dragonite::verify(buffer, AB, size, message);
+    ASSERT_LE(norm(AB, buffer, size), 1e-5 * norm(AB, size));
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, Cshape, buffer, 2, Cshape, alpha, beta, transA, transB);
-    dragonite::verify(buffer, Y, size, message);
+    ASSERT_LE(norm(Y, buffer, size), 1e-5 * norm(Y, size));
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 1, Cshape + 1, buffer, 2, Cshape, alpha, beta, transA, transB);
-    dragonite::verify(buffer, Yrow, size, message);
+    ASSERT_LE(norm(Yrow, buffer, size), 1e-5 * norm(Yrow, size));
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 2, column, buffer, 2, Cshape, alpha, beta, transA, transB);
-    dragonite::verify(buffer, Ycol, size, message);
+    ASSERT_LE(norm(Ycol, buffer, size), 1e-5 * norm(Ycol, size));
 
     f(nullptr, A, 2, Lshape, B, 2, Rshape, C, 0, nullptr, buffer, 2, Cshape, alpha, beta, transA, transB);
-    dragonite::verify(buffer, Ysca, size, message);
+    ASSERT_LE(norm(Ysca, buffer, size), 1e-5 * norm(Ysca, size));
 }
 {% endmacro -%}
 

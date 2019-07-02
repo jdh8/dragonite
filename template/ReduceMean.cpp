@@ -1,4 +1,4 @@
-#include "dragonite.hpp"
+#include "dragonite/common.hpp"
 
 {% from "mod/batch.cpp" import batch -%}
 {% from "mod/reduce.cpp" import inner, outer -%}

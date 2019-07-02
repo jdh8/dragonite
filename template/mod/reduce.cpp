@@ -17,7 +17,7 @@ SKYPAT_F({{ operator }}, {{ name }})
 {% endmacro -%}
 
 {% macro assert(message) -%}
-    dragonite::verify(buffer, y, size, {{ message | tojson }});
+    ASSERT_LE(dragonite::norm(y, buffer, size), 1e-5 * dragonite::norm(y, size));
 {% endmacro -%}
 
 {% macro inner(y, axes, verify=assert) -%}

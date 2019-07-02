@@ -1,4 +1,4 @@
-#include "dragonite.hpp"
+#include "dragonite/common.hpp"
 
 {% from "mod/batch.cpp" import batch -%}
 
@@ -10,7 +10,7 @@
     const float y[] = {{ y.flatten() | array }};
 
     ONNC_RUNTIME_lpnormalization_float(nullptr, x, ndim, shape, buffer, ndim, shape, {{ axis }}, {{ p }});
-    dragonite::verify(buffer, y, size, "axis={{ axis }}, p={{ p }}");
+    ASSERT_LE(dragonite::norm(y, buffer, size), 1e-5 * dragonite::norm(y, size));
 }
 {% endmacro -%}
 

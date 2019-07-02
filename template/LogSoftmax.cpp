@@ -1,4 +1,4 @@
-#include "dragonite.hpp"
+#include "dragonite/common.hpp"
 
 {% from "mod/batch.cpp" import batch -%}
 
@@ -22,8 +22,9 @@ SKYPAT_F(LogSoftmax, {{ name }})
         {% set y = x - numpy.logaddexp.reduce(x, axis=axes, keepdims=true) -%}
 
         const float y[] = {{ y.flatten() | array }};
+
         ONNC_RUNTIME_logsoftmax_float(nullptr, x, ndim, shape, buffer, ndim, shape, {{ axis }});
-        dragonite::verify(buffer, y, size, "axis={{ axis }}");
+        ASSERT_LE(dragonite::norm(y, buffer, size), 1e-5 * dragonite::norm(y, size));
     }
     {% else -%}
     {

@@ -1,4 +1,4 @@
-#include "dragonite.hpp"
+#include "dragonite/common.hpp"
 
 {% from "mod/batch.cpp" import batch -%}
 
@@ -10,13 +10,14 @@
     const float y[] = {{ numpy.where(numpy.signbit(x), slope * x, x).flatten() | array }};
 
     const std::int32_t subshape[] = {{ subshape | array }};
+    bool (*predicate)(float, float) = dragonite::within<1>;
 
     ONNC_RUNTIME_prelu_float(nullptr, x, ndim, shape, slope, ndim, subshape, buffer, ndim, shape);
-    ASSERT_TRUE(dragonite::approx(buffer, y, size));
+    ASSERT_TRUE(std::equal(y, y + size, buffer, predicate));
 
     for (std::int32_t squeezed = 1; squeezed <= ndim && subshape[squeezed - 1] == 1; ++squeezed) {
         ONNC_RUNTIME_prelu_float(nullptr, x, ndim, shape, slope, ndim - squeezed, subshape + squeezed, buffer, ndim, shape);
-        ASSERT_TRUE_MSG(dragonite::approx(buffer, y, size), squeezed);
+        ASSERT_TRUE_MSG(std::equal(y, y + size, buffer, predicate), squeezed);
     }
 }
 {% endmacro -%}
