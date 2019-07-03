@@ -17,7 +17,6 @@ def run(destination, source):
 
     for entry in os.scandir(source):
         if entry.is_file():
-            with open(os.path.join(destination, entry.name), "w") as stream:
-                stream.write(environment.get_template(entry.name).render())
+            environment.get_template(entry.name).stream().dump(os.path.join(destination, entry.name))
 
 run("result", "template")
