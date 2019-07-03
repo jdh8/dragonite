@@ -16,7 +16,7 @@ def run(destination, source):
     os.makedirs(destination, exist_ok=True)
 
     for entry in os.scandir(source):
-        if entry.is_file():
+        if entry.name.endswith(".cpp"):
             environment.get_template(entry.name).stream().dump(os.path.join(destination, entry.name))
 
 run("result", "template")
