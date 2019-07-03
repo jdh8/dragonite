@@ -2,7 +2,7 @@
 SKYPAT_F({{ operator }}, {{ name }})
 {
     {% set ndim = shape | length -%}
-    {% set powerset = (ndim * ((1, 0),)) | star(itertools.product) -%}
+    {% set powerset = itertools.product(*(ndim * ((1, 0),))) -%}
 
     const auto f = ONNC_RUNTIME_{{ operator | lower }}_float;
     const std::int32_t ndim = {{ ndim }};

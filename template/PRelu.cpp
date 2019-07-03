@@ -36,7 +36,7 @@ SKYPAT_F(PRelu, {{ name }})
 
     float buffer[size];
 
-    {% for bits in (ndim * ((1, 0),)) | star(itertools.product) -%}
+    {% for bits in itertools.product(*(ndim * ((1, 0),))) -%}
         {{ subtest(x, numpy.power(shape, bits)) | indent }}
     {% endfor %}
 }
