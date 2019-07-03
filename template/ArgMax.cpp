@@ -1,4 +1,4 @@
-#include "dragonite/common.hpp"
+#include "common.hpp"
 
 {% from "mod/batch.cpp" import batch -%}
 {% from "mod/argmax.cpp" import testcase -%}

@@ -1,4 +1,4 @@
-#include "dragonite/common.hpp"
+#include "common.hpp"
 
 {% macro view(rows, cols, depth, A, B, C, orderA, orderB) -%}
 {
