@@ -6,7 +6,7 @@ import onnxruntime
 import itertools
 import os
 
-def infer(operator, *inputs, outputs=1, **attributes):
+def infer(operator, *inputs, **attributes):
     tags = {
         numpy.void:       onnx.TensorProto.UNDEFINED,
         numpy.float32:    onnx.TensorProto.FLOAT,
@@ -27,15 +27,24 @@ def infer(operator, *inputs, outputs=1, **attributes):
         numpy.complex128: onnx.TensorProto.COMPLEX128,
     }
 
+    def length(operator, split="**", **attributes):
+        return len(split) if operator == "Split" else 1
+
     arity = range(len(inputs))
+    split = range(length(operator, **attributes))
     itensors = [onnx.helper.make_tensor_value_info(f"%i{k}", tags[inputs[k].dtype.type], inputs[k].shape) for k in arity]
-    otensors = [onnx.helper.make_empty_tensor_value_info(f"%o{k}") for k in range(outputs)]
+    otensors = [onnx.helper.make_empty_tensor_value_info(f"%o{k}") for k in split]
     node = onnx.helper.make_node(operator, [t.name for t in itensors], [t.name for t in otensors], **attributes)
     graph = onnx.helper.make_graph([node], operator, itensors, otensors)
     model = onnx.helper.make_model(graph)
     sess = onnxruntime.InferenceSession(model.SerializeToString())
+    outputs = sess.run([f"%o{k}" for k in split], { f"%i{k}": inputs[k] for k in arity })
 
-    return sess.run([f"%o{k}" for k in range(outputs)], { f"%i{k}": inputs[k] for k in arity })
+    if operator == "Split":
+        return outputs
+
+    [output] = outputs
+    return output
 
 def run(destination, source):
     environment = jinja2.Environment(loader = jinja2.FileSystemLoader(source))
