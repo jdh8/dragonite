@@ -9,7 +9,7 @@ SKYPAT_F(LpPool, {{ name }})
     {% set pads = numpy.minimum(numpy.tile(kernel - 1, 2), numpy.random.randint(0, 8, 2 * ndim)) -%}
     {% set strides = numpy.random.randint(1, 4, ndim) -%}
     {% set x = numpy.random.standard_cauchy(numpy.concatenate((channels, image))).astype(numpy.float32) -%}
-    {% set y = ("LpPool" | infer(x, kernel_shape=kernel, pads=pads, strides=strides))[0] -%}
+    {% set (y,) = "LpPool" | infer(x, kernel_shape=kernel, pads=pads, strides=strides) -%}
 
     const char autopad[] = "NOTSET";
     const std::int32_t kernel[] = {{ kernel | array }};

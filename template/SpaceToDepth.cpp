@@ -4,7 +4,7 @@
 {% set wide = numpy.random.randint(2, 6, 4) * (1, 1, blocksize, blocksize) -%}
 {% set size = numpy.prod(wide) -%}
 {% set x = numpy.arange(size, dtype=numpy.float32).reshape(wide) -%}
-{% set y = ("SpaceToDepth" | infer(x, blocksize=blocksize))[0] -%}
+{% set (y,) = "SpaceToDepth" | infer(x, blocksize=blocksize) -%}
 
 SKYPAT_F(SpaceToDepth, image)
 {
