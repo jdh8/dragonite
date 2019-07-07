@@ -1,11 +1,10 @@
 #include "common.hpp"
 
-#define VERIFY(buffer, y, size) do {                               \
-    for (std::size_t i = 0; i < size; ++i) {                       \
-        using std::abs;                                            \
-        ASSERT_LE_MSG(abs(buffer[i] - y[i]), abs(1e-5 * y[i]), i); \
-    }                                                              \
-} while (0)
+static bool predicate(float real, float estimate)
+{
+    using std::abs;
+    return abs(real - estimate) <= abs(1e-5f * real);
+}
 
 {% from "mod/batch.cpp" import batch -%}
 
@@ -34,13 +33,13 @@ SKYPAT_F(GlobalLpPool, {{ name }})
     float buffer[size];
 
     f(nullptr, x, ndim, shape, buffer, ndim, reduced, 1);
-    VERIFY(buffer, y1, size);
+    ASSERT_TRUE(std::equal(y1, y1 + size, buffer, predicate));
 
     f(nullptr, x, ndim, shape, buffer, ndim, reduced, 2);
-    VERIFY(buffer, y2, size);
+    ASSERT_TRUE(std::equal(y2, y2 + size, buffer, predicate));
 
     f(nullptr, x, ndim, shape, buffer, ndim, reduced, 3);
-    VERIFY(buffer, y3, size);
+    ASSERT_TRUE(std::equal(y3, y3 + size, buffer, predicate));
 }
 {% endcall -%}
 {# vim: set ft=liquid: #}

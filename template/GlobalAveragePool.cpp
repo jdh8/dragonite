@@ -1,5 +1,11 @@
 #include "common.hpp"
 
+static bool predicate(float real, float estimate)
+{
+    using std::abs;
+    return abs(real - estimate) <= abs(1e-5f * real);
+}
+
 {% from "mod/batch.cpp" import batch -%}
 
 {% call(name, shape) batch(2) -%}
@@ -21,11 +27,7 @@ SKYPAT_F(GlobalAveragePool, {{ name }})
     float buffer[size];
 
     ONNC_RUNTIME_globalaveragepool_float(nullptr, x, ndim, shape, buffer, ndim, reduced);
-
-    for (std::size_t i = 0; i < size; ++i) {
-        using std::abs;
-        ASSERT_LE_MSG(abs(buffer[i] - y[i]), abs(1e-5 * y[i]), i);
-    }
+    ASSERT_TRUE(std::equal(y, y + size, buffer, predicate));
 }
 {% endcall -%}
 {# vim: set ft=liquid: #}
