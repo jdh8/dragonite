@@ -17,7 +17,7 @@ SKYPAT_F(GlobalLpPool, {{ name }})
 
     {% set y1 = numpy.sum(numpy.abs(x), axes, keepdims=true) -%}
     {% set y2 = numpy.hypot.reduce(x, axes, keepdims=true) -%}
-    {% set y3 = numpy.linalg.norm(x.reshape((shape[0], shape[1], -1)), 3, axis=2) -%}
+    {% set y3 = numpy.linalg.norm(x.reshape(shape[0], shape[1], -1), 3, axis=2) -%}
 
     const float x[] = {{ x.flatten() | array }};
     const float y1[] = {{ y1.flatten() | array }};
